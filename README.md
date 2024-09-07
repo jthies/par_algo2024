@@ -60,7 +60,16 @@ rules for "building" your program into a file called ``Makefile``, and then uses
 these rules to create the program from the source code.
 
 In this repository you will find a fully functional ``Makefile`` geared towards
-use on DelftBlue. On your own system, you may need to adjust some paths
+use on DelftBlue. On your own system, you need to set the environment variable ``OPENCOARRAYS_ROOT``
+to the directory where the library is installed. On my Ubuntu laptop, I installed the library using
+```bash
+sudo apt install opencoarays-dev libcaf-openmpi-3t64
+```
+and in the file ``.bashrc`` (which is executed at the start of every terminal session), added the line
+```bash
+export OPENCOARRAYS_ROOT=/usr/lib/x86_64-linux-gnu/open-coarrays/openmpi/
+```
+On DelftBlue, it is sufficient to load the module as desribed above.
 
 # 1. Hello World!
 
