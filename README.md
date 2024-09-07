@@ -1,4 +1,4 @@
-# par_algo2024
+# Parallel Algorithms 2024/2025
 
 This repository contains material for the programming tasks of MasterMath course "parallel algorithms" 24/25.
 It is a dynamically extended tutorial that will take you from first steps (installing the Fortran compiler and libraries)
@@ -31,8 +31,10 @@ If you then want to re-do them (after the ``pull``), simply type ``git stash pop
 **Note:** You are free to commit your work to the local repository or a fork on github,
 but you cannot push to the repo itself. Committing your work locally makes sure you have
 the history and a backup in case you break your programs and is therefore highly recommended.
+Having local commits will typically not cause conflicts with the ``git pull`` as we only
+add new files for new tasks.
 
-# Basic programming environment
+# 0. Basic programming environment
 
 We recommend that you set up a working environment on your own computer.
 During the course, you will also get access to the DelftBlue supercomputer,
@@ -60,7 +62,7 @@ these rules to create the program from the source code.
 In this repository you will find a fully functional ``Makefile`` geared towards
 use on DelftBlue. On your own system, you may need to adjust some paths
 
-# Hello World!
+# 1. Hello World!
 
 You find our first program in ``main_hello.f08``.
 You can compile it using:
@@ -78,7 +80,7 @@ Do you notice anything unexpected?
 
 Can you adapt the program so that all "Hello" lines are printed before the "Goodbye" lines?
 
-# Dot Product
+# 2. Dot Product
 
 The second program is slightly more complicated. It consists of two source files: ``dotprod.f08``
 and ``main_dotprod.f08``. The former is a Fortran __module__ that provides several implementations
@@ -99,7 +101,13 @@ you can change this as well.
 
 You may have noticed that the ``gatherbcast`` variant is not implemented yet.
 Do this in ``dotprod.f08`` and run the program again to test and time it.
+The way the variant works is sketched in the comments of that function.
 
 ## Task: Implement your own variant
 
-Implement at least one additional variant of your own.
+Implement at least one additional variant of your own. You can also try to generalize the "butterfly"
+variant, which currently only works if the number of processes is a power of 2.
+
+Run the main program for the maximum number of processes available on your system and different values of the vector length N.
+Which variant is the best?
+
