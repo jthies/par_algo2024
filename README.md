@@ -2,7 +2,7 @@
 
 This repository contains material for the programming tasks of MasterMath course "parallel algorithms" 24/25.
 It is a dynamically extended tutorial that will take you from first steps (installing the Fortran compiler and libraries)
-to being abel to write parallel programs and run them on a supercomputer yourself.
+to being able to write parallel programs and run them on a supercomputer yourself.
 
 If you have never worked with ``git``, it may be helpful to do this [basic tutorial](https://product.hubspot.com/blog/git-and-github-tutorial-for-beginners).
 
