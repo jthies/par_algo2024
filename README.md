@@ -57,7 +57,7 @@ Compiling a program (especially if it consists of multiple source files)
 can require (a series of) commands that are hard to memorize and specific
 to the programming environment. The Linux command ``make`` allows you to put the
 rules for "building" your program into a file called ``Makefile``, and then uses
-these rules to create the program from the source code.
+these rules to build the program from the source code.
 
 In this repository you will find a fully functional ``Makefile`` geared towards
 use on DelftBlue. On your own system, you need to set the environment variable ``OPENCOARRAYS_ROOT``
@@ -116,7 +116,8 @@ The way the variant works is sketched in the comments of that function.
 
 Implement at least one additional variant of your own. You can also try to generalize the "butterfly"
 variant, which currently only works if the number of processes is a power of 2.
+One idea for your own variant is to replace the ``sync all`` statements (partly) by syncrhonization between two processes (``sync images(...)`` in Fortran).
 
-Run the main program for the maximum number of processes available on your system and different values of the vector length N.
+Run the main program for the maximum number of processes available on your computer and different values of the vector length N.
 Which variant is the best?
 
