@@ -4,7 +4,7 @@
 
 FC=gfortran
 FFLAGS=-O3 -march=native -fcoarray=lib -fopenmp -std=f2018 -cpp -ffree-line-length-none
-LDFLAGS=-L${OPENCOARRAYS_ROOT}/lib -lcaf_mpi
+LDFLAGS=-L${OPENCOARRAYS_ROOT}/lib -L${OPENCOARRAYS_ROOT}/lib64 -lcaf_mpi
 
 ################################################################
 # Define where to find the fortuno_coaray installation.        #
