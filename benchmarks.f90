@@ -147,4 +147,62 @@ bench_hrel = (t1-t0)/dble(ntimes)
 
 end function bench_hrel
 
+! Alternative function to benchmark an h-relation.
+! This variant gives much better performance as it
+! avoids interleaved memory accesses and may therefore be
+! a better model for predicting performance of well-written
+! codes.
+real(8) function bench_hrel2(h,ntimes)
+
+implicit none
+
+integer(kind=8), intent(in) :: h, ntimes
+
+! note: we let remote processors p each write to a contiguous
+! memory space recvbuf(:,p) with leading dimension a multiple of the
+! cache-line length. That way, no false sharing can occur (that is,
+! no synchronization because cache-line elements are updated by multiple
+! processors).
+integer(kind=8), allocatable :: recvbuf(:,:)[:]
+integer(kind=8), allocatable :: sendbuf(:,:)
+
+integer :: i, j, k, np, me, bs
+integer, dimension(h) :: dest, destidx
+real(kind=8) :: t0, t1
+
+np = num_images()
+me = this_image()
+bs = ceiling(dble(h)/dble(np))
+
+! let every process write to a memory location aligned to 10 cache-line (80 element) blocks
+! to avoid unwanted synchronization due to cache-line sharing. Note that this
+! is different from the 'interleaved' writing in the Bisseling implementation of bspbench,
+! where adjacent processes write to adjancent cache-line elements and the performnace is much
+! worse on modern CPUs.
+allocate(sendbuf(4000, np))
+allocate(recvbuf(4000, np)[*])
+
+! Initialize communication pattern
+do i=1,h
+    ! arbitrary data to send
+    sendbuf(i,:)= i;
+end do
+
+! Measure time of ntimes h-relations
+sync all
+t0 = wtime()
+do j=1,ntimes
+    do k=1,np
+        do i=1,bs
+            recvbuf(i,me)[k] = sendbuf(i,k)
+        end do
+    end do
+    sync all
+end do
+t1 = wtime()
+
+bench_hrel2 = (t1-t0)/dble(ntimes)
+
+end function bench_hrel2
+
 end module m_benchmarks
