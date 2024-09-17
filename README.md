@@ -73,7 +73,7 @@ On DelftBlue, it is sufficient to load the module as desribed above.
 
 # 1. Hello World!
 
-You find our first program in ``main_hello.f08``.
+You find our first program in ``main_hello.f90``.
 You can compile it using:
 ```bash
 make main_hello.x
@@ -91,8 +91,8 @@ Can you adapt the program so that all "Hello" lines are printed before the "Good
 
 # 2. Dot Product
 
-The second program is slightly more complicated. It consists of two source files: ``dotprod.f08``
-and ``main_dotprod.f08``. The former is a Fortran __module__ that provides several implementations
+The second program is slightly more complicated. It consists of two source files: ``dotprod.f90``
+and ``main_dotprod.f90``. The former is a Fortran __module__ that provides several implementations
 of a function to compute the inner product of two distributed vectors (coarrays). The latter contains
 a program that will run these variants and print timing results.
 
@@ -109,7 +109,7 @@ you can change this as well.
 ## Task: Implement the ``gatherbcast`` variant
 
 You may have noticed that the ``gatherbcast`` variant is not implemented yet.
-Do this in ``dotprod.f08`` and run the program again to test and time it.
+Do this in ``dotprod.f90`` and run the program again to test and time it.
 The way the variant works is sketched in the comments of that function.
 
 ## Task: Implement your own variant

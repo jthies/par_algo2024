@@ -18,23 +18,23 @@ FORTUNO_LDFLAGS=-L/beegfs/apps/unsupported/fortuno/lib -lfortuno-coarray
 ######################################
 
 # by default, build all examples:
-all: main_hello.x main_dotprod.x main_benchmarks.f08
+all: main_hello.x main_dotprod.x main_benchmarks.f90
 
 ##############################
 # general rules              #
 ##############################
 
-%.o: %.f08 Makefile
+%.o: %.f90 Makefile
 	${FC} ${FFLAGS} -c $<
 
-%.x: %.f08 
+%.x: %.f90 
 	${FC} ${FFLAGS} -o $@ $^ ${LDFLAGS}
 
-# note: for this target we first have to compile dotprod.f08 to produce dotprod.o and m_dotprod.mod
-main_dotprod.x: main_dotprod.f08 dotprod.o
+# note: for this target we first have to compile dotprod.f90 to produce dotprod.o and m_dotprod.mod
+main_dotprod.x: main_dotprod.f90 dotprod.o
 
-# this driver needs the m_benchmarks.mod module, which is produced when compiling benchmarks.f08
-main_benchmarks.x: main_benchmarks.f08 benchmarks.o
+# this driver needs the m_benchmarks.mod module, which is produced when compiling benchmarks.f90
+main_benchmarks.x: main_benchmarks.f90 benchmarks.o
 	${FC} ${FFLAGS} -o $@ $^ ${LDFLAGS}
 
 clean:
