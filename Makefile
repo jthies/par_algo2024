@@ -2,9 +2,9 @@
 # define how to compile Fortran 2018 code with coarray support #
 ################################################################
 
-FC=gfortran
-FFLAGS=-O3 -march=native -fcoarray=lib -fopenmp -std=f2018 -cpp -ffree-line-length-none
-LDFLAGS=-L${OPENCOARRAYS_ROOT}/lib -L${OPENCOARRAYS_ROOT}/lib64 -lcaf_mpi
+FC=caf
+FFLAGS=-O3 -march=native -fopenmp -std=f2018 -cpp -ffree-line-length-none
+LDFLAGS=
 
 ################################################################
 # Define where to find the fortuno_coaray installation.        #
