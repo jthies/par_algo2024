@@ -43,8 +43,18 @@ where you do not need to install additional software.
 The programming language used throughout the course is **Fortran 2018**. It has native support for
 parallel programming, so in principle all you will need is a Fortran compiler.
 We recommend using the GNU compiler ``gfortran``. To enable actual parallel execution of your code,
-it relies on the OpenCoarrays library, which you have to install separately:
-See [this page](http://www.opencoarrays.org/) for instructions on how to do this.
+it relies on the OpenCoarrays library, which you have to install separately.
+
+To install all you need in an Ubuntu terminal, you can use:
+```bash
+sudo apt install build-essential libopencoarrays-openmpi-dev
+```
+On Windows, you can configure the "Windows Subsystem for Linux" WSL to use Ubuntu as Linux distribution (and this should be the default).
+On other Linux systems, the package manager may be something other than ``apt``, on MacOS the command is called ``brew`` and requires the Homebrew package manager to be installed.
+Package names may also differ between distributions. Make sure the ``opencoarrays`` package you install has MPI support,
+here indicated by the ``-openmpi`` in the name.
+
+See [this page](http://www.opencoarrays.org/) for general instructions for various systems.
 
 On the DelftBlue supercomputer, you do not need to install anything. Instead, you should load the required modules
 and you're good to go:
@@ -60,16 +70,7 @@ rules for "building" your program into a file called ``Makefile``, and then uses
 these rules to build the program from the source code.
 
 In this repository you will find a fully functional ``Makefile`` geared towards
-use on DelftBlue. On your own system, you need to set the environment variable ``OPENCOARRAYS_ROOT``
-to the directory where the library is installed. On my Ubuntu laptop, I installed the library using
-```bash
-sudo apt install libopencoarrays-openmpi-dev
-```
-and in the file ``.bashrc`` (which is executed at the start of every terminal session), added the line
-```bash
-export OPENCOARRAYS_ROOT=/usr/lib/x86_64-linux-gnu/open-coarrays/openmpi/
-```
-On DelftBlue, it is sufficient to load the module as desribed above.
+use on DelftBlue. In principle, it should also work on your own computer, though.
 
 # 1. Hello World!
 
