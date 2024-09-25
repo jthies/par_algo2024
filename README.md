@@ -124,7 +124,7 @@ Which variant is the best?
 
 # 3. Parallel Sample Sort
 
-The paralllel sorting algorithm described in Section 1.8 of the book is implemented as ``sort_coarray`` in the file ``sorting.f90``.
+The paralllel sorting algorithm (described in Section 1.8 of the book by Rob Bisseling) is implemented as ``sort_coarray`` in the file ``sorting.f90``.
 A corresponding driver routine is available in ``main_sorting.f90``. It takes a single integer as command-line argument: The (approximate)
 number of elements to be assigned to each process. Your input will be rounded up to a multiple of P^2, where P is the number of processes (images)
 running the program.
@@ -148,3 +148,9 @@ but trying it out on DelftBlue instead.
 unit tests that isolate it and then fix the problem. A patch or pull request with a bug fix to this repository may put your
 teachers in a good mood during the final oral exam...
 - Use the structure of the sorting program as inspiration for your first bigger programming task: the Sieve of Eratosthenes
+
+**Note:** To run this (or any) program on DelftBlue compute nodes (rather than the login node),
+use ``srun`` instead of ``mpirun``. This requires a number of flags (in particular the ``--mem-per-cpu`` flag),
+that are most conveniently set in a job script. See ``benchmarks.slurm`` for an example of a job script, and
+the [DelftBlue documentation](https://doc.dhpc.tudelft.nl) for many more. For quick tests, do not use the ``--exclusive``
+flag as it will request a full node, which may make your waiting times long.
