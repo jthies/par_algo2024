@@ -122,3 +122,29 @@ One idea for your own variant is to replace the ``sync all`` statements (partly)
 Run the main program for the maximum number of processes available on your computer and different values of the vector length N.
 Which variant is the best?
 
+# 3. Parallel Sample Sort
+
+The paralllel sorting algorithm described in Section 1.8 of the book is implemented as ``sort_coarray`` in the file ``sorting.f90``.
+A corresponding driver routine is available in ``main_sorting.f90``. It takes a single integer as command-line argument: The (approximate)
+number of elements to be assigned to each process. Your input will be rounded up to a multiple of P^2, where P is the number of processes (images)
+running the program.
+
+## Unit testing
+
+This is a slightly more complex program than we saw before: ``sort_coarray`` calls other functions like ``quicksort`` and ``mergeparts``. To assure that all
+components work properly, it is useful to employ a **test framework**. Here we will use [fortuno](https://github.com/fortuno-repos/fortuno-coarray).
+This is a fortran library that allows you to easily write and execute small test programs. On DelftBlue we have installed it for you, and the ``Makefile``
+has been extended with targets ``main_test.x`` and ``test``. If you type ``make test``, the test driver is built and executed for a varying number of
+processes.
+
+**Unfortunately**, the co-array extension of fortuno did not work on my Ubuntu laptop. I would therefore presently __not__ recommend installing it
+but trying it out on DelftBlue instead.
+
+## "Tasks"
+
+- Use the dot product and sorting examples to familiarize yourself with Fortran, DelftBlue job submission, make files
+(e.g., try switching to debugging options for your build).
+- There may be bugs in the sorting program (every program always has them...). If you encounter one, you may try to add 
+unit tests that isolate it and then fix the problem. A patch or pull request with a bug fix to this repository may put your
+teachers in a good mood during the final oral exam...
+- Use the structure of the sorting program as inspiration for your first bigger programming task: the Sieve of Eratosthenes
