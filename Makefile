@@ -6,7 +6,7 @@ FC=caf
 # use these flags for optimized build
 FFLAGS=-O3 -march=native -fopenmp -std=f2018 -cpp -ffree-line-length-none
 # and these for developing/debugging
-FFLAGS=-O0 -g -fopenmp -std=f2018 -cpp -ffree-line-length-none -fcheck=all
+#FFLAGS=-O0 -g -fopenmp -std=f2018 -cpp -ffree-line-length-none -fcheck=all
 LDFLAGS=
 
 ################################################################
