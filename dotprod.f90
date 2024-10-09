@@ -32,7 +32,7 @@ integer :: me, np, i
 np = num_images()
 me = this_image()
 
-if ((.not. allocated(local_dots)) .or. (size(local_dots) /= np)) then
+if (.not. allocated(local_dots)) then
     allocate(local_dots(np)[*])
 end if
 
