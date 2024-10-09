@@ -14,7 +14,7 @@
 #SBATCH --mem=0
 # make all cores use the same clock speed so it looks more like a BSP computer
 #SBATCH --cpu-freq=medium
-#SBATCH --account=education-eemcs-courses-paf24
+#SBATCH --account=education-eemcs-courses-mastermath
 
 # the driver writes matlab/octave executable output,
 # we pipe all of it into an m-file for post-processing
@@ -25,7 +25,7 @@ echo "" > bench_data.m
 NUMA_DOMAINS="0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,3,3,3"
 
 # load necessary modules for running Fortran coarray code
-module load 2024rc1 openmpi opencoarrays
+module load 2024r1 openmpi opencoarrays
 for np in 12 24 48; do
     srun  -n $np --cpu-bind=map_ldom:${NUMA_DOMAINS} ./main_benchmarks.x |& grep -v UCX >> bench_data.m
 done
