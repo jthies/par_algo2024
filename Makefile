@@ -21,7 +21,7 @@ FORTUNO_LDFLAGS=-L/beegfs/apps/unsupported/fortuno/lib -lfortuno-coarray
 ######################################
 
 # by default, build all examples:
-all: main_hello.x main_dotprod.x main_benchmarks.f90 main_sorting.x
+all: main_hello.x main_dotprod.x main_benchmarks.f90 main_sorting.x prime_sieve.x
 
 ###############################################
 # these should always be executed when called #
@@ -37,6 +37,16 @@ all: main_hello.x main_dotprod.x main_benchmarks.f90 main_sorting.x
 	${FC} ${FFLAGS} -c $<
 
 %.x: %.f90 
+	${FC} ${FFLAGS} -o $@ $^ ${LDFLAGS}
+
+# note: for this target we first have to compile dotprod.f90 to produce dotprod.o and m_dotprod.mod
+main_dotprod.x: main_dotprod.f90 dotprod.o
+
+# note: for this target we first have to compile dotprod.f90 to produce dotprod.o and m_dotprod.mod
+main_dotprod.x: main_dotprod.f90 dotprod.o
+
+# this driver needs the m_benchmarks.mod module, which is produced when compiling benchmarks.f90
+prime_sieve.x: prime_sieve.f90 benchmarks.o
 	${FC} ${FFLAGS} -o $@ $^ ${LDFLAGS}
 
 # note: for this target we first have to compile dotprod.f90 to produce dotprod.o and m_dotprod.mod
