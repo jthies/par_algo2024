@@ -33,7 +33,8 @@ contains
         test("sorting: merge", test_merge), &
         test("sorting: mergeparts", test_mergeparts), &
         test("sorting: mergeparts with odd nparts", test_mergeparts_odd_nparts), &
-        test("sorting: sort_coarray", test_sort_coa) &
+        test("sorting: sort_coarray", test_sort_coa), &
+        test('primes: simple_sieve', test_simple_sieve) &
     ]
 
   end function get_unit_tests
@@ -323,5 +324,33 @@ end function is_sorted_coa
     call ctx%check(is_sorted_coa(X, nloc_after), msg='case 3: sort_coarray with random array')
 
   end subroutine test_sort_coa
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!! PRIMES
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine test_simple_sieve(ctx)
+    use m_primes
+    implicit none
+    class(context), intent(inout) :: ctx
+
+    integer(idx), parameter :: ntests = 3
+    integer(idx), parameter, dimension(ntests) :: Ns= (/100, 1000, 10000/)
+    integer(idx), parameter, dimension(ntests) :: expected_nprimes = (/25, 168, 1229/)
+    
+    integer(idx) :: N, nprimes, nprimes_max
+    integer(idx), dimension(Ns(ntests)) :: primes
+    logical, dimension(Ns(ntests)) :: sieve
+    integer(idx) :: k
+
+    do k=1,ntests
+      N = Ns(k)
+      nprimes_max = 5*int(dble(N)/floor(log(dble(N))))
+      sieve(:) = .true.
+      primes(:) = -1
+      call simple_sieve(sieve(1:N), primes(1:nprimes_max), nprimes)
+      call ctx%check(is_equal(int(nprimes,kind=4), int(expected_nprimes(k),kind=4)))
+    end do
+  end subroutine test_simple_sieve
   
 end module m_unit_tests
