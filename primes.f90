@@ -13,7 +13,7 @@ integer(idx), intent(out) :: nprimes
 
 integer(idx) :: N, sqN, i, j
 
-N = size(sieve)
+N = ubound(sieve,1)
 
 nprimes = 0
 sqN = int(sqrt(dble(N)))
@@ -27,24 +27,34 @@ do i=2,sqN
         end do
     end if
 end do
-call collect_primes(sieve, sqN+1, N, primes, nprimes)
+call collect_primes(sieve(sqN+1:N), sqN+1, N, primes, nprimes)
 
 end subroutine simple_sieve
 
-! for sieve(a:b), element a:p:b to false.
-subroutine filter_range(a, b, p, sieve)
+! Assuming that sieve(1) refers to number 'a',
+! for every element p in pprimes, 
+! set entries offset:p:end to false.,
+! where 'offset' is the smallest multiple of p larger than min(a,p^2)
+subroutine filter_range(a, sieve, primes)
 
 implicit none
 
-integer(idx), intent(in) :: a, b
-integer(idx), dimension(:), intent(in) :: p
+integer(idx), intent(in) :: a
 logical, dimension(:), intent(inout) :: sieve
+integer(idx), dimension(:), intent(in) :: primes
 
-integer(idx) :: i, offset
+integer(idx) :: i, offset, p, b
 
-do i=1,size(p)
-  offset = a-modulo(a, p(i))
-  sieve(max(a,p(i)*p(i)):b:p(i)) = .false.
+b = size(sieve)
+
+do i=1,size(primes)
+  p = primes(i)
+  offset = a-modulo(a, p)
+  if (offset<a) then
+      offset = offset+p
+  end if
+  offset = max(p*p,offset)-a+1
+  sieve(offset:b:p) = .false.
 end do
 
 end subroutine filter_range
@@ -60,10 +70,10 @@ integer(idx), intent(inout) :: nprimes
 
 integer(idx) :: i
 
-do i=a, b
+do i=1, b-a+1
     if (sieve(i)) then
         nprimes=nprimes+1
-        primes(nprimes) = i
+        primes(nprimes) = a+i-1
     end if
 end do
 
