@@ -17,13 +17,18 @@ use m_benchmarks, only: wtime
 use m_primes
 
 implicit none
-
+#ifdef DEBUG
 logical, parameter :: verbose = .true.
+#else
+logical, parameter :: verbose = .false.
+#endif
 integer(idx) :: N, nloc, nprimes, nprimes_old, nprimes_max
-integer(idx) :: batch_size, active_proc
+integer(idx), dimension(:), allocatable :: nprimes_new[:]
+integer(idx) :: first_batch
+integer :: proc_i
 integer(idx) :: P, Q, i, imin, imax
 logical, dimension(:), allocatable :: sieve
-integer(idx), dimension(:), allocatable :: primes[:]
+integer(idx), dimension(:), allocatable :: new_primes[:], primes[:]
 character(len=12) :: arg
 real(kind=8) :: t0, t1
 
@@ -31,7 +36,7 @@ if (command_argument_count() > 0) then
     call get_command_argument(1,arg)
     read(arg,*) N
 else
-    write(*,*) 'Using N=100 for testing. To change this, pass N on the command-line.'
+    if (this_image()==1) write(*,*) 'Using N=100 for testing. To change this, pass N on the command-line.'
     N = 100
 end if
 
@@ -40,63 +45,72 @@ N = N + modulo(N, int(num_images(),8))
 
 nprimes_max = 5*int(dble(N)/floor(log(dble(N))))
 nloc = N/num_images()
-batch_size = min(100_8, nloc)
+first_batch = min(100_8, nloc)
 
 imin = (this_image()-1)*nloc+1
 imax = this_image()*nloc
 
 allocate(sieve(imin:imax))
 allocate(primes(nprimes_max)[*])
+allocate(nprimes_new(num_images())[*])
+allocate(new_primes(nprimes_max)[*])
 
 t0 = wtime()
 
 sieve(:) = .true.
 
-active_proc = 1
 nprimes_old = 0
 
-if (this_image() == active_proc) then
-    if (verbose) write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 0: image ',active_proc,' computes all primes in range [',imin,',',imin+batch_size-1,']'
-    call simple_sieve(sieve(imin:imin+batch_size-1), primes, nprimes)
+if (this_image() == 1) then
+    if (verbose) write(*,'(A,I0,A,I0,A)') 'SUPERSTEP 0: image 1 computes all primes in range [',imin,',',imin+first_batch-1,']'
+    call simple_sieve(sieve(imin:imin+first_batch-1), primes, nprimes)
     if (verbose) write(*,'(A,I0,A)') 'Found ',nprimes, ' initial primes.'
 end if
 
 if (verbose .and. this_image()==1) write(*,*) 'SUPERSTEP 1: broadcast initial primes.'
-call co_broadcast(nprimes, active_proc)
-call co_broadcast(primes(1:nprimes), active_proc)
+call co_broadcast(nprimes, 1)
+call co_broadcast(primes(1:nprimes), 1)
 
 do while (.true.)
     ! Filter with all newly found primes in previous step
-    if (verbose) then
-        write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 2: P',this_image(), ' filter range [',imin,',', imax,']'
-        write(*,'(A,I0,A,I0,A)') '        using primes in range [',primes(nprimes_old+1),',',primes(nprimes),']'
+    P=primes(nprimes_old+1)
+    Q=primes(nprimes)
+    if (P*P<=imax .or. Q>=imin) then
+        if (verbose) then
+            write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 2: P',this_image(), ' filter range [',imin,',', imax,']'
+            write(*,'(A,I0,A,I0,A)')      '             using primes in range [',P,',',Q,']'
+        end if
+        call filter_range(imin, sieve, primes(nprimes_old+1:nprimes))
     end if
-    if (verbose) then
-        write(*,*) 'current nprimes: ',nprimes
-        write(*,*) 'current nprimes_old: ',nprimes_old
-        write(*,*) 'current primes: ',primes(1:nprimes)
-    end if
-    call filter_range(imin, sieve, primes(nprimes_old+1:nprimes))
-
     ! Collect new primes if you are the active process.
     ! The active process is the owner of the last prime number identified,
     ! because he is most likely the owner of the next (few).
     ! If we have filtered the whole range with all prime numbers up to P, then
     ! the prime numbers up to P^2 are "laid bare" (only prime numbers
     ! remain in sieve(P+1:P^2).
-    P = primes(nprimes)
-    active_proc = (P+1)/nloc+1
-    Q = min(P*P, active_proc*nloc)
+    P = max(imin, primes(nprimes)+1)
+    Q = min(P*P, imax)
     nprimes_old = nprimes
-    if (this_image()==active_proc) then
-        if (verbose) write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 3: P',this_image(),' collects primes in range [',P+1,',',Q,']'
-        call collect_primes(sieve(P+1:Q), P+1, Q, primes, nprimes)
-    end if
-    call co_broadcast(nprimes, active_proc)
-    call co_broadcast(primes(nprimes_old+1:nprimes), active_proc)
+    nprimes_new(this_image()) = 0
+    if (verbose .and. P<=Q) write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 3: P',this_image(),' collects primes in range [',P+1,',',Q,']'
+    call collect_primes(sieve(P+1:Q), P+1, Q, new_primes, nprimes_new(this_image()))
+    do proc_i=1,num_images()
+        nprimes_new(this_image())[proc_i] = nprimes_new(this_image())
+    end do
+    sync all()
+    if (verbose .and. this_image()==1) write(*,*) 'nprimes_new: ', nprimes_new(:)
+    do proc_i=1,num_images()
+        if (nprimes_new(proc_i)>0) then
+            primes(nprimes+1:nprimes+nprimes_new(proc_i)) = new_primes(1:nprimes_new(proc_i))[proc_i]
+            nprimes = nprimes + nprimes_new(proc_i)
+        end if
+    end do
+    sync all
+    
     P = primes(nprimes)
-    if (verbose .and. this_image()==0) write(*,'(A,I0,A,I0)') 'nprimes=',nprimes, ' max prime:',P
-    if (Q>=N) exit
+    Q = primes(nprimes_old)
+    if (verbose .and. this_image()==1) write(*,'(A,I0,A,I0)') 'nprimes=',nprimes, ' max prime:',P
+    if (Q*Q>=N) exit
 end do
 
 do while (primes(nprimes)>n)
