@@ -11,7 +11,7 @@
 !       C = \sum_{p<N: p is prime} (N-p^2)/p = \psum N/p - \psum p 
 !             ^=:\psum
 !
-program seq_sieve
+program par_sieve
 
 use m_benchmarks, only: wtime
 use m_primes
@@ -75,7 +75,10 @@ do while (.true.)
     ! Filter with all newly found primes in previous step
     P=primes(nprimes_old+1)
     Q=primes(nprimes)
-    if (P*P<=imax .or. Q>=imin) then
+    ! we can skip the filtering completely if none of
+    ! the primes would lead to any cross-outs
+    !if (Q*Q<=imax) then
+    if (.true.) then
         if (verbose) then
             write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 2: P',this_image(), ' filter range [',imin,',', imax,']'
             write(*,'(A,I0,A,I0,A)')      '             using primes in range [',P,',',Q,']'
@@ -91,9 +94,9 @@ do while (.true.)
     P = max(imin, primes(nprimes)+1)
     Q = min(P*P, imax)
     nprimes_old = nprimes
-    nprimes_new(this_image()) = 0
+    nprimes_new(:) = 0
     if (verbose .and. P<=Q) write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 3: P',this_image(),' collects primes in range [',P+1,',',Q,']'
-    call collect_primes(sieve(P+1:Q), P+1, Q, new_primes, nprimes_new(this_image()))
+    call collect_primes(sieve(P:Q), P, Q, new_primes, nprimes_new(this_image()))
     do proc_i=1,num_images()
         nprimes_new(this_image())[proc_i] = nprimes_new(this_image())
     end do
@@ -130,10 +133,16 @@ if (this_image()==1) then
   write(*,'(A,G12.4, A)') 'Elapsed time: ',t1-t0,' seconds.'
 end if
 
+!do i=imin, imax
+!    if (sieve(i)) then
+!        write(*,*) 'TROET ',i
+!    end if
+!end do
+
 deallocate(sieve)
 deallocate(primes)
 
-end program seq_sieve
+end program par_sieve
 
 
 
