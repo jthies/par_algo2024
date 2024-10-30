@@ -45,7 +45,8 @@ N = N + modulo(N, int(num_images(),8))
 
 nprimes_max = 5*int(dble(N)/floor(log(dble(N))))
 nloc = N/num_images()
-first_batch = min(100_8, nloc)
+!first_batch = min(100_8, nloc)
+first_batch = 2_8
 
 imin = (this_image()-1)*nloc+1
 imax = this_image()*nloc
@@ -92,15 +93,16 @@ do while (.true.)
     ! the prime numbers up to P^2 are "laid bare" (only prime numbers
     ! remain in sieve(P+1:P^2).
     P = max(imin, primes(nprimes)+1)
-    Q = min(P*P, imax)
+    Q = min(imax,primes(nprimes)*primes(nprimes))
     nprimes_old = nprimes
     nprimes_new(:) = 0
+    sync all
     if (verbose .and. P<=Q) write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 3: P',this_image(),' collects primes in range [',P+1,',',Q,']'
     call collect_primes(sieve(P:Q), P, Q, new_primes, nprimes_new(this_image()))
     do proc_i=1,num_images()
         nprimes_new(this_image())[proc_i] = nprimes_new(this_image())
     end do
-    sync all()
+    sync all
     if (verbose .and. this_image()==1) write(*,*) 'nprimes_new: ', nprimes_new(:)
     do proc_i=1,num_images()
         if (nprimes_new(proc_i)>0) then
@@ -125,7 +127,7 @@ t1 = wtime()
 
 if (this_image()==1) then
   write(*,'(A,I0, A, I0)') 'Number of primes smaller than ',N, ': ',nprimes
-  if (nprimes<=100) then
+  if (nprimes<=10000) then
     do i=1,nprimes
       write(*,'(I0)') primes(i)
     end do
