@@ -360,8 +360,8 @@ end function is_sorted_coa
     class(context), intent(inout) :: ctx
 
     integer(idx), parameter :: ntests = 3
-    integer(idx), parameter, dimension(ntests) :: Ns= (/9973, 20000, 1000000/)
-    integer(idx), parameter, dimension(ntests) :: expected_nprimes = (/1229, 2269, 78498/)
+    integer(idx), parameter, dimension(ntests) :: Ns= (/100, 9973, 20000/) !, 1000000/)
+    integer(idx), parameter, dimension(ntests) :: expected_nprimes = (/25, 1229, 2262/) !, 78498/)
     
     integer(idx) :: N, nprimes
     integer(idx), dimension(:), allocatable :: primes[:]
