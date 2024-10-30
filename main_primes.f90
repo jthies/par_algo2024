@@ -45,8 +45,7 @@ N = N + modulo(N, int(num_images(),8))
 
 nprimes_max = 5*int(dble(N)/floor(log(dble(N))))
 nloc = N/num_images()
-!first_batch = min(100_8, nloc)
-first_batch = 2_8
+first_batch = min(100_8, nloc)
 
 imin = (this_image()-1)*nloc+1
 imax = this_image()*nloc
@@ -127,7 +126,7 @@ t1 = wtime()
 
 if (this_image()==1) then
   write(*,'(A,I0, A, I0)') 'Number of primes smaller than ',N, ': ',nprimes
-  if (nprimes<=10000) then
+  if (nprimes<=100) then
     do i=1,nprimes
       write(*,'(I0)') primes(i)
     end do

@@ -49,10 +49,10 @@ b = size(sieve)
 
 do i=1,size(primes)
   p = primes(i)
-  offset = a-modulo(a, p)
-  if (offset<a) then
-      offset = offset+p
-  end if
+  offset = a
+  do while (modulo(offset,p)>0)
+      offset = offset+1
+  end do
   offset = max(p*p,offset)-a+1
   sieve(offset:b:p) = .false.
 end do
