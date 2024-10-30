@@ -34,7 +34,8 @@ contains
         test("sorting: mergeparts", test_mergeparts), &
         test("sorting: mergeparts with odd nparts", test_mergeparts_odd_nparts), &
         test("sorting: sort_coarray", test_sort_coa), &
-        test('primes: simple_sieve', test_simple_sieve) &
+        test('primes: simple_sieve', test_simple_sieve), &
+        test('primes: simple_sieve', test_parallel_sieve) &
     ]
 
   end function get_unit_tests
@@ -352,5 +353,26 @@ end function is_sorted_coa
       call ctx%check(is_equal(int(nprimes,kind=4), int(expected_nprimes(k),kind=4)))
     end do
   end subroutine test_simple_sieve
+
+  subroutine test_parallel_sieve(ctx)
+    use m_primes
+    implicit none
+    class(context), intent(inout) :: ctx
+
+    integer(idx), parameter :: ntests = 3
+    integer(idx), parameter, dimension(ntests) :: Ns= (/9973, 20000, 1000000/)
+    integer(idx), parameter, dimension(ntests) :: expected_nprimes = (/1229, 2269, 78498/)
+    
+    integer(idx) :: N, nprimes
+    integer(idx), dimension(:), allocatable :: primes[:]
+    integer(idx) :: k
+
+    do k=1,ntests
+      N = Ns(k)
+      call parallel_sieve(N, primes, nprimes)
+      call ctx%check(is_equal(int(nprimes,kind=4), int(expected_nprimes(k),kind=4)))
+      deallocate(primes)
+    end do
+  end subroutine test_parallel_sieve
   
 end module m_unit_tests
