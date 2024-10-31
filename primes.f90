@@ -175,8 +175,8 @@ do while (.true.)
         write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 2: P',this_image(), ' filter range [',imin,',', imax,']'
         write(*,'(A,I0,A,I0,A)')      '             using primes in range [',P,',',Q,']'
     end if
-    !call simple_filter(imin, sieve, primes(nprimes_old+1:nprimes))
-    call fast_filter(imin, sieve, primes(nprimes_old+1:nprimes), Q)
+    call simple_filter(imin, sieve, primes(nprimes_old+1:nprimes), Q)
+    !call  fast_filter(imin, sieve, primes(nprimes_old+1:nprimes), Q)
     ! Collect new primes if you are the active process.
     ! The active process is the owner of the last prime number identified,
     ! because he is most likely the owner of the next (few).
@@ -206,8 +206,6 @@ do while (.true.)
     P = primes(nprimes)
     Q = primes(nprimes_old)
     if (verbose .and. this_image()==1) write(*,'(A,I0,A,I0)') 'nprimes=',nprimes, ' max prime:',P
-    write(*,*) 'Q=',Q
-    write(*,*) 'nprimes=',nprimes,' nprimes_old=',nprimes_old
     if (Q*Q>=N) exit
     if (nprimes==nprimes_old) exit
 end do
