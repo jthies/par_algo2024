@@ -26,7 +26,7 @@ integer(idx) :: N, sqN, i, j
 N = ubound(sieve,1)
 
 nprimes = 0
-sqN = int(sqrt(dble(N)))
+sqN = ceiling(sqrt(dble(N)),8)
 
 do i=2,sqN
     if (sieve(i)) then
@@ -42,16 +42,18 @@ call collect_primes(sieve(sqN+1:N), sqN+1, N, primes, nprimes)
 end subroutine simple_sieve
 
 ! Assuming that sieve(1) refers to number 'a',
-! for every element p in pprimes, 
+! for every element p in pprimes that is <= pmax:
 ! set entries offset:p:end to false.,
 ! where 'offset' is the smallest multiple of p larger than min(a,p^2)
-subroutine simple_filter(a, sieve, primes)
+! primes is assumed to be ordered from small to large.
+subroutine simple_filter(a, sieve, primes, pmax)
 
 implicit none
 
 integer(idx), intent(in) :: a
 logical, dimension(:), intent(inout) :: sieve
 integer(idx), dimension(:), intent(in) :: primes
+integer(idx), intent(in) :: pmax
 
 integer(idx) :: i, offset, p, b
 
@@ -59,6 +61,7 @@ b = size(sieve)
 
 do i=1,size(primes)
   p = primes(i)
+  if (p>pmax) exit
   offset = a
   do while (modulo(offset,p)>0)
       offset = offset+1
@@ -71,11 +74,12 @@ end subroutine simple_filter
 
 ! This subroutine does the same as 'simple_filter' above,
 ! but it uses cache-blocking to achieve much higher performance
-subroutine fast_filter(a, sieve, primes)
+subroutine fast_filter(a, sieve, primes, pmax)
 implicit none
 integer(idx), intent(in) :: a
 logical, dimension(:), intent(inout) :: sieve
 integer(idx), dimension(:), intent(in) :: primes
+integer(idx), intent(in) :: pmax
 
 integer(idx) :: n, nprimes
 integer(idx) :: i
@@ -88,7 +92,7 @@ nprimes = size(primes)
 
 do i=1,n,chunk
     imax=min(i+chunk,n)
-    call simple_filter(a+i-1, sieve(i:imax), primes)
+    call simple_filter(a+i-1, sieve(i:imax), primes, pmax)
 end do
 
 end subroutine fast_filter
@@ -124,7 +128,7 @@ subroutine parallel_sieve(N, primes, nprimes)
 integer(idx), intent(in) :: N
 integer(idx), intent(out) :: nprimes
 integer(idx), allocatable :: primes(:)[:]
-integer(idx) :: nloc, nprimes_old, nprimes_max
+integer(idx) :: nloc, sqN, nprimes_old, nprimes_max
 integer(idx), dimension(:), allocatable :: nprimes_new[:]
 integer(idx) :: first_batch
 integer :: proc_i
@@ -136,8 +140,9 @@ real(kind=8) :: t0, t1
 
 nprimes_max = 5*int(dble(N)/floor(log(dble(N))))
 nloc = N/num_images()
+sqN=ceiling(sqrt(dble(N)),8)
 
-first_batch = min(1000_8, nloc)
+first_batch = min(sqN, nloc)
 
 imin = (this_image()-1)*nloc+1
 imax = this_image()*nloc
@@ -165,17 +170,13 @@ call co_broadcast(primes(1:nprimes), 1)
 do while (.true.)
     ! Filter with all newly found primes in previous step
     P=primes(nprimes_old+1)
-    Q=primes(nprimes)
-    ! we can skip the filtering completely if none of
-    ! the primes would lead to any cross-outs
-    !if (Q*Q<=imax) then
-    if (.true.) then
-        if (verbose) then
-            write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 2: P',this_image(), ' filter range [',imin,',', imax,']'
-            write(*,'(A,I0,A,I0,A)')      '             using primes in range [',P,',',Q,']'
-        end if
-        call simple_filter(imin, sieve, primes(nprimes_old+1:nprimes))
+    Q=min(sqN,primes(nprimes))
+    if (verbose) then
+        write(*,'(A,I0,A,I0,A,I0,A)') 'SUPERSTEP 2: P',this_image(), ' filter range [',imin,',', imax,']'
+        write(*,'(A,I0,A,I0,A)')      '             using primes in range [',P,',',Q,']'
     end if
+    !call simple_filter(imin, sieve, primes(nprimes_old+1:nprimes))
+    call fast_filter(imin, sieve, primes(nprimes_old+1:nprimes), Q)
     ! Collect new primes if you are the active process.
     ! The active process is the owner of the last prime number identified,
     ! because he is most likely the owner of the next (few).
@@ -205,7 +206,10 @@ do while (.true.)
     P = primes(nprimes)
     Q = primes(nprimes_old)
     if (verbose .and. this_image()==1) write(*,'(A,I0,A,I0)') 'nprimes=',nprimes, ' max prime:',P
+    write(*,*) 'Q=',Q
+    write(*,*) 'nprimes=',nprimes,' nprimes_old=',nprimes_old
     if (Q*Q>=N) exit
+    if (nprimes==nprimes_old) exit
 end do
 
 do while (primes(nprimes)>n)
