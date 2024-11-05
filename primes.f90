@@ -72,31 +72,6 @@ end do
 
 end subroutine simple_filter
 
-! This subroutine does the same as 'simple_filter' above,
-! but it uses cache-blocking to achieve much higher performance
-subroutine fast_filter(a, sieve, primes, pmax)
-implicit none
-integer(idx), intent(in) :: a
-logical, dimension(:), intent(inout) :: sieve
-integer(idx), dimension(:), intent(in) :: primes
-integer(idx), intent(in) :: pmax
-
-integer(idx) :: n, nprimes
-integer(idx) :: i
-integer(idx) :: chunk, imax
-
-chunk = 1000 ! cover the range [a,b] with this step size
-
-n = size(sieve)
-nprimes = size(primes)
-
-do i=1,n,chunk
-    imax=min(i+chunk,n)
-    call simple_filter(a+i-1, sieve(i:imax), primes, pmax)
-end do
-
-end subroutine fast_filter
-
 ! given a filtered sieve(a:b), insert any positions still .true. into primes(nprimes+1:nprimes'),
 ! where nprimes is the value on input, and nprimes' on output.
 subroutine collect_primes(sieve, a, b, primes, nprimes)
@@ -176,7 +151,7 @@ do while (.true.)
         write(*,'(A,I0,A,I0,A)')      '             using primes in range [',P,',',Q,']'
     end if
     call simple_filter(imin, sieve, primes(nprimes_old+1:nprimes), Q)
-    !call  fast_filter(imin, sieve, primes(nprimes_old+1:nprimes), Q)
+
     ! Collect new primes if you are the active process.
     ! The active process is the owner of the last prime number identified,
     ! because he is most likely the owner of the next (few).
